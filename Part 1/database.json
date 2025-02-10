@@ -1,0 +1,5 @@
+{
+    "model_1": {"weight": 0.8, "balance": 1000},
+    "model_2": {"weight": 0.6, "balance": 1000},
+    "model_3": {"weight": 0.9, "balance": 1000}
+}
