@@ -1,7 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-// Sample data for products (replace with a database in production)
+const fs = require('fs');
+const path = require('path');
+
+const dbPath = path.join(__dirname, '../db.json');
+const readDB = () => JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+const writeDB = (data) => fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+
+
+// Sample data for products 
 let products = [
     { id: 1, name: 'Laptop', price: 1200, category: 'Electronics', inStock: true },
     { id: 2, name: 'Phone', price: 800, category: 'Electronics', inStock: true },
@@ -11,40 +19,33 @@ let products = [
 // Sample cart data
 let carts = {};  // Keyed by userId, value is the cart object
 
-// POST /cart/:userId - Add a product to the user's cart
+// Sample cart route example
 router.post('/:userId', (req, res) => {
     const { userId } = req.params;
     const { productId, quantity } = req.body;
 
-    if (!productId || !quantity) {
-        return res.status(400).json({ message: 'Product ID and quantity are required' });
+    const db = readDB();
+    const product = db.products.find(p => p.id === productId);
+
+    if (!product || !product.inStock) {
+        return res.status(400).json({ message: 'Product not available' });
     }
 
-    const product = products.find(p => p.id === productId);
-    if (!product) {
-        return res.status(404).json({ message: `Product with ID ${productId} not found` });
-    }
-    if (!product.inStock) {
-        return res.status(400).json({ message: `Product ${product.name} is out of stock` });
+    if (!db.carts[userId]) {
+        db.carts[userId] = { items: [], totalPrice: 0 };
     }
 
-    // Initialize cart if it doesn't exist for the user
-    if (!carts[userId]) {
-        carts[userId] = { items: [], totalPrice: 0 };
-    }
-
-    // Check if the product already exists in the cart
-    const existingItem = carts[userId].items.find(item => item.productId === productId);
+    const existingItem = db.carts[userId].items.find(item => item.productId === productId);
     if (existingItem) {
         existingItem.quantity += quantity;
     } else {
-        carts[userId].items.push({ productId, name: product.name, quantity, price: product.price });
+        db.carts[userId].items.push({ productId, name: product.name, quantity, price: product.price });
     }
 
-    // Recalculate total price
-    carts[userId].totalPrice = carts[userId].items.reduce((total, item) => total + (item.quantity * item.price), 0);
+    db.carts[userId].totalPrice = db.carts[userId].items.reduce((total, item) => total + item.quantity * item.price, 0);
 
-    res.status(201).json(carts[userId]);
+    writeDB(db);
+    res.status(201).json(db.carts[userId]);
 });
 
 // GET /cart/:userId - Get the user's shopping cart

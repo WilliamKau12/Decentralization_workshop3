@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-commerce</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-4">
+    <h1 class="mb-4">E-commerce Store</h1>
+
+    <!-- Product List Section -->
+    <h3>Product List</h3>
+    <div id="product-list" class="row">
+      <!-- Products will be inserted here dynamically -->
+    </div>
+
+    <!-- Cart Section -->
+    <h3 class="mt-5">Shopping Cart</h3>
+    <div id="cart-list">
+      <!-- Cart items will be inserted here dynamically -->
+    </div>
+
+    <!-- Order Section -->
+    <h3 class="mt-5">Create Order</h3>
+    <div id="order-form">
+      <!-- Order form and submit button -->
+      <button class="btn btn-success" id="create-order">Create Order</button>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+  <script>
+    const apiBaseUrl = 'http://localhost:3000';  // Change the URL as necessary
+
+    // Fetch and display products
+    function getProducts() {
+      fetch(`${apiBaseUrl}/products`)
+        .then(response => response.json())
+        .then(products => {
+          const productList = document.getElementById('product-list');
+          productList.innerHTML = '';
+          products.forEach(product => {
+            const productCard = `
+              <div class="col-md-4 mb-4">
+                <div class="card">
+                  <img src="${product.image}" class="card-img-top" alt="${product.name}">
+                  <div class="card-body">
+                    <h5 class="card-title">${product.name}</h5>
+                    <p class="card-text">${product.description}</p>
+                    <p><strong>Price: $${product.price}</strong></p>
+                    <button class="btn btn-primary" onclick="addToCart(${product.id}, 1)">Add to Cart</button>
+                  </div>
+                </div>
+              </div>
+            `;
+            productList.innerHTML += productCard;
+          });
+        });
+    }
+
+    // Add product to cart
+    function addToCart(productId, quantity) {
+      const userId = 1;  // Set user ID
+      const cartData = { productId, quantity };
+      
+      fetch(`${apiBaseUrl}/cart/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(cartData)
+      })
+      .then(response => response.json())
+      .then(cart => {
+        displayCart(cart);
+      });
+    }
+
+    // Display Cart
+    function displayCart(cart) {
+      const cartList = document.getElementById('cart-list');
+      cartList.innerHTML = '';
+      cart.items.forEach(item => {
+        const cartItem = `
+          <div class="cart-item">
+            <p>${item.product.name} - Quantity: ${item.quantity}</p>
+            <button class="btn btn-danger" onclick="removeFromCart(${item.product.id})">Remove</button>
+          </div>
+        `;
+        cartList.innerHTML += cartItem;
+      });
+    }
+
+    // Remove product from cart
+    function removeFromCart(productId) {
+      const userId = 1;  // Set user ID
+      fetch(`${apiBaseUrl}/cart/${userId}/item/${productId}`, {
+        method: 'DELETE'
+      })
+      .then(response => response.json())
+      .then(cart => {
+        displayCart(cart);
+      });
+    }
+
+    // Create Order
+    document.getElementById('create-order').addEventListener('click', () => {
+      const userId = 1;  // Set user ID for order
+      fetch(`${apiBaseUrl}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      })
+      .then(response => response.json())
+      .then(order => {
+        alert('Order created successfully!');
+      });
+    });
+
+    // Initial Data Load
+    window.onload = function() {
+      getProducts();
+    };
+  </script>
+</body>
+</html>

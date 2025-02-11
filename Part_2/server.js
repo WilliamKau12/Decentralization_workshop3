@@ -5,7 +5,12 @@ const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const cartRoutes = require('./routes/cart');  // Import cart route
 
+const path = require('path');
+
 const PORT = 3000;
+
+// Serve static files (the front-end)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
