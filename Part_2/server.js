@@ -1,11 +1,16 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
-const PORT = 3001;
+const productRoutes = require('./routes/products');
 
-app.get('/', (req, res) => {
-    res.send('Hello, World!');
-});
+const PORT = 3000;
+
+// Middleware to parse JSON bodies
+app.use(bodyParser.json());
+
+// Product routes
+app.use('/products', productRoutes);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`E-commerce API running on http://localhost:${PORT}`);
 });

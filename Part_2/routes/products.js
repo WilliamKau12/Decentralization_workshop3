@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Sample data for demonstration
+// Sample data 
 let products = [
     { id: 1, name: 'Laptop', description: 'High-end laptop', price: 1200, category: 'Electronics', inStock: true },
     { id: 2, name: 'Phone', description: 'Smartphone with great camera', price: 800, category: 'Electronics', inStock: true },
